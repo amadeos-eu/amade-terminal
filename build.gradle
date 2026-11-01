@@ -1,0 +1,182 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'eu.amadeos'
+// CI computes the version from the Conventional Commits since the last release tag and passes it as
+// -PappVersion (amadeos-eu/amadeos-ci scripts/next-version.sh); a build without it is a local development build.
+version = findProperty('appVersion') ?: '0.0.0-dev.0'
+// Debian sorts 1.1.0~dev.57 before 1.1.0 (with - it would sort after it).
+def debVersion = version.toString().replace('-', '~')
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+application {
+    mainClass = 'eu.amadeos.apps.terminal.bootstrap.AmadeTerminalApplication'
+    applicationDefaultJvmArgs = ['--enable-native-access=ALL-UNNAMED']
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    // Theme, Motif look, start-up, XDG folders and the program runner shared by all amadeOS applications.
+    // With ../amade-commons checked out, settings.gradle builds that checkout instead (composite build).
+    implementation 'com.github.amadeos-eu:amade-commons:1205a3c725'
+    runtimeOnly 'ch.qos.logback:logback-classic:1.5.18'
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+    // The pseudo terminal is opened through Java's foreign function API.
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
+    // Tests compare English texts, whatever the language of the build machine.
+    systemProperty 'user.language', 'en'
+    systemProperty 'user.country', 'US'
+}
+
+jar {
+    archiveBaseName = 'amade-terminal'
+    manifest {
+        attributes(
+            'Main-Class': 'eu.amadeos.apps.terminal.bootstrap.AmadeTerminalApplication',
+            'Implementation-Title': 'amade-terminal',
+            'Implementation-Version': project.version,
+            // posix_openpt, ioctl, read and write of the pseudo terminal through Java's foreign function API
+            'Enable-Native-Access': 'ALL-UNNAMED'
+        )
+    }
+    from({
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    })
+    // Signed dependency jars would otherwise invalidate the fat jar.
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.register('deb') {
+    dependsOn jar
+    description = 'Builds a standard Debian (.deb) package for amade-terminal'
+    group = 'distribution'
+
+    doLast {
+        def buildDirFile = layout.buildDirectory.get().asFile
+        def stagingDir = new File(buildDirFile, 'deb-staging')
+        delete(stagingDir)
+
+        def optDir = new File(stagingDir, 'opt/amade-terminal')
+        def binDir = new File(stagingDir, 'usr/bin')
+        def appDir = new File(stagingDir, 'usr/share/applications')
+        def iconDir = new File(stagingDir, 'usr/share/icons/hicolor/48x48/apps')
+        def docDir = new File(stagingDir, 'usr/share/doc/amade-terminal')
+        def debianDir = new File(stagingDir, 'DEBIAN')
+        def distDir = new File(buildDirFile, 'distributions')
+        [optDir, binDir, appDir, iconDir, docDir, debianDir, distDir]*.mkdirs()
+
+        copy {
+            from jar.archiveFile
+            into optDir
+            rename { 'amade-terminal.jar' }
+        }
+
+        def launcher = new File(binDir, 'amade-terminal')
+        launcher.text = """#!/bin/sh
+exec /usr/bin/java --enable-native-access=ALL-UNNAMED -jar /opt/amade-terminal/amade-terminal.jar "\$@"
+"""
+        launcher.setExecutable(true, false)
+
+        copy {
+            from 'packaging/amade-terminal.desktop'
+            into appDir
+        }
+        // AppStream metadata: name, description and screenshot for amadeOS Software (and a repository's
+        // appstream-generator).
+        copy {
+            from 'packaging/eu.amadeos.apps.terminal.metainfo.xml'
+            into new File(stagingDir, "usr/share/metainfo")
+        }
+        copy {
+            from 'src/main/resources/icons/amade-terminal.png'
+            into iconDir
+        }
+        copy {
+            from 'LICENSE'
+            into docDir
+            rename { 'copyright' }
+        }
+
+        new File(debianDir, 'control').text = """Package: amade-terminal
+Version: ${debVersion}
+Section: x11
+Priority: optional
+Architecture: all
+Depends: openjdk-25-jre | java-runtime (>= 25), util-linux
+Recommends: bash-completion, fonts-dejavu-core
+Provides: x-terminal-emulator
+Maintainer: amadeOS Project <developers@datazuul.com>
+Description: Terminal for amadeOS
+ An xterm-compatible terminal emulator with tabs: the shell's Tab
+ completion and history, colours, the mouse and full-screen programs
+ such as nano, vim, htop and mc work as in any terminal. Copy and paste
+ with the selection and the middle mouse button or Ctrl+Shift+C and
+ Ctrl+Shift+V, a warning before pasting several lines, search in the
+ scrollback, links that open with Ctrl+click and colour schemes.
+ Part of the amadeOS desktop.
+"""
+        // x-terminal-emulator: programs and Terminal=true desktop entries start amade-terminal
+        def postinst = new File(debianDir, 'postinst')
+        postinst.text = """#!/bin/sh
+set -e
+if [ "\$1" = configure ]; then
+    update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/bin/amade-terminal 50
+fi
+"""
+        postinst.setExecutable(true, false)
+        def prerm = new File(debianDir, 'prerm')
+        prerm.text = """#!/bin/sh
+set -e
+if [ "\$1" = remove ] || [ "\$1" = deconfigure ]; then
+    update-alternatives --remove x-terminal-emulator /usr/bin/amade-terminal
+fi
+"""
+        prerm.setExecutable(true, false)
+
+        def debFile = new File(distDir, "amade-terminal_${debVersion}_all.deb")
+        def process = new ProcessBuilder('dpkg-deb', '--root-owner-group', '--build',
+                stagingDir.absolutePath, debFile.absolutePath)
+                .redirectErrorStream(true)
+                .start()
+        process.inputStream.eachLine { println it }
+        if (process.waitFor() != 0) {
+            throw new GradleException('dpkg-deb failed')
+        }
+        println "[deb] Created ${debFile.absolutePath}"
+    }
+}
+
+tasks.register('installToAmadeOs') {
+    dependsOn 'deb'
+    description = 'Builds and drops the .deb package into ../amadeos/config/packages.chroot/'
+    group = 'distribution'
+
+    doLast {
+        def targetDir = file('../amadeos/config/packages.chroot')
+        targetDir.mkdirs()
+        def debFile = new File(layout.buildDirectory.get().asFile, "distributions/amade-terminal_${debVersion}_all.deb")
+        copy {
+            from debFile
+            into targetDir
+        }
+        println "[installToAmadeOs] Copied ${debFile.name} to ${targetDir.absolutePath}"
+    }
+}

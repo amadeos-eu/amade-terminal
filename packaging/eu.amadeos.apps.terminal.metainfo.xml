@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- AppStream metadata of amade-terminal, installed as /usr/share/metainfo/eu.amadeos.apps.terminal.metainfo.xml.
+     amadeOS Software shows it for the installed package; a repository's appstream-generator reads it too. -->
+<component type="desktop-application">
+  <id>eu.amadeos.apps.terminal</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>EUPL-1.2</project_license>
+
+  <name>amadeOS Terminal</name>
+  <name xml:lang="de">amadeOS Terminal</name>
+  <name xml:lang="fr">amadeOS Terminal</name>
+  <name xml:lang="es">amadeOS Terminal</name>
+  <name xml:lang="it">amadeOS Terminale</name>
+
+  <summary>Use the command line</summary>
+  <summary xml:lang="de">Die Befehlszeile benutzen</summary>
+  <summary xml:lang="fr">Utiliser la ligne de commande</summary>
+  <summary xml:lang="es">Usar la línea de comandos</summary>
+  <summary xml:lang="it">Usare la riga di comando</summary>
+
+  <description>
+    <p>amade-terminal is the terminal of the amadeOS desktop. It runs the shell and command line programs such as top, vim or apt in tabs, with its own xterm compatible emulator.</p>
+    <p xml:lang="de">amade-terminal ist das Terminal des amadeOS-Desktops. Es führt die Shell und Befehlszeilenprogramme wie top, vim oder apt in Tabs aus, mit einem eigenen xterm-kompatiblen Emulator.</p>
+    <p xml:lang="fr">amade-terminal est le terminal du bureau amadeOS. Il exécute le shell et les programmes en ligne de commande comme top, vim ou apt dans des onglets, avec son propre émulateur compatible xterm.</p>
+    <p xml:lang="es">amade-terminal es el terminal del escritorio amadeOS. Ejecuta el shell y programas de línea de comandos como top, vim o apt en pestañas, con su propio emulador compatible con xterm.</p>
+    <p xml:lang="it">amade-terminal è il terminale del desktop amadeOS. Esegue la shell e i programmi a riga di comando come top, vim o apt in schede, con un proprio emulatore compatibile con xterm.</p>
+    <ul>
+      <li>Copy and paste with Ctrl+Shift+C and Ctrl+Shift+V, or select and paste with the middle mouse button</li>
+      <li xml:lang="de">Kopieren und Einfügen mit Strg+Umschalt+C und Strg+Umschalt+V, oder markieren und mit der mittleren Maustaste einfügen</li>
+      <li xml:lang="fr">Copier et coller avec Ctrl+Maj+C et Ctrl+Maj+V, ou sélectionner et coller avec le bouton du milieu</li>
+      <li xml:lang="es">Copiar y pegar con Ctrl+Mayús+C y Ctrl+Mayús+V, o seleccionar y pegar con el botón central del ratón</li>
+      <li xml:lang="it">Copia e incolla con Ctrl+Maiusc+C e Ctrl+Maiusc+V, oppure seleziona e incolla con il tasto centrale del mouse</li>
+      <li>Tab completion of commands, files and options by the shell</li>
+      <li xml:lang="de">Tab-Vervollständigung von Befehlen, Dateien und Optionen durch die Shell</li>
+      <li xml:lang="fr">Complétion par Tab des commandes, fichiers et options par le shell</li>
+      <li xml:lang="es">Completado con Tab de órdenes, archivos y opciones por el shell</li>
+      <li xml:lang="it">Completamento con Tab di comandi, file e opzioni da parte della shell</li>
+      <li>Tabs, a long scrollback with search, links that open with Ctrl+click</li>
+      <li xml:lang="de">Tabs, ein langer Verlauf mit Suche, Links, die sich mit Strg+Klick öffnen</li>
+      <li xml:lang="fr">Onglets, un long historique avec recherche, liens qui s'ouvrent avec Ctrl+clic</li>
+      <li xml:lang="es">Pestañas, un historial largo con búsqueda, enlaces que se abren con Ctrl+clic</li>
+      <li xml:lang="it">Schede, una lunga cronologia con ricerca, link che si aprono con Ctrl+clic</li>
+      <li>256 and true colours, colour schemes, a warning before pasting several lines</li>
+      <li xml:lang="de">256 und echte Farben, Farbschemata, eine Warnung vor dem Einfügen mehrerer Zeilen</li>
+      <li xml:lang="fr">256 couleurs et couleurs réelles, jeux de couleurs, un avertissement avant de coller plusieurs lignes</li>
+      <li xml:lang="es">256 colores y color verdadero, esquemas de color, un aviso antes de pegar varias líneas</li>
+      <li xml:lang="it">256 colori e colori reali, schemi di colori, un avviso prima di incollare più righe</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">amade-terminal.desktop</launchable>
+  <icon type="stock">amade-terminal</icon>
+  <categories>
+    <category>System</category>
+    <category>TerminalEmulator</category>
+  </categories>
+
+  <url type="homepage">https://github.com/amadeos-eu/amade-terminal</url>
+  <url type="bugtracker">https://github.com/amadeos-eu/amade-terminal/issues</url>
+  <developer id="eu.amadeos">
+    <name>amadeOS Project</name>
+  </developer>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>The shell with tab completion and colours</caption>
+      <caption xml:lang="de">Die Shell mit Tab-Vervollständigung und Farben</caption>
+      <caption xml:lang="fr">Le shell avec la complétion par Tab et les couleurs</caption>
+      <caption xml:lang="es">El shell con completado con Tab y colores</caption>
+      <caption xml:lang="it">La shell con il completamento con Tab e i colori</caption>
+      <image>https://raw.githubusercontent.com/amadeos-eu/amade-terminal/main/docs/screenshots/amade-terminal.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Preferences with colour schemes and a live preview</caption>
+      <caption xml:lang="de">Einstellungen mit Farbschemata und Vorschau</caption>
+      <caption xml:lang="fr">Préférences avec les jeux de couleurs et un aperçu</caption>
+      <caption xml:lang="es">Preferencias con esquemas de color y una vista previa</caption>
+      <caption xml:lang="it">Preferenze con gli schemi di colori e un'anteprima</caption>
+      <image>https://raw.githubusercontent.com/amadeos-eu/amade-terminal/main/docs/screenshots/amade-terminal-preferences.png</image>
+    </screenshot>
+  </screenshots>
+
+  <provides>
+    <binary>amade-terminal</binary>
+  </provides>
+  <content_rating type="oars-1.1"/>
+</component>
