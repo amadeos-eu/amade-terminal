@@ -1,0 +1,33 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=amadeOS Terminal
+Name[de]=amadeOS Terminal
+Name[fr]=amadeOS Terminal
+Name[es]=amadeOS Terminal
+Name[it]=amadeOS Terminale
+GenericName=Terminal
+GenericName[de]=Terminal
+GenericName[fr]=Terminal
+GenericName[es]=Terminal
+GenericName[it]=Terminale
+Comment=Use the command line
+Comment[de]=Die Befehlszeile benutzen
+Comment[fr]=Utiliser la ligne de commande
+Comment[es]=Usar la línea de comandos
+Comment[it]=Usare la riga di comando
+Icon=amade-terminal
+Exec=/usr/bin/amade-terminal
+Terminal=false
+Categories=System;TerminalEmulator;
+Keywords=terminal;shell;console;command line;prompt;bash;Konsole;Befehlszeile;Kommandozeile;
+StartupNotify=true
+Actions=new-window;
+
+[Desktop Action new-window]
+Name=New Window
+Name[de]=Neues Fenster
+Name[fr]=Nouvelle fenêtre
+Name[es]=Nueva ventana
+Name[it]=Nuova finestra
+Exec=/usr/bin/amade-terminal

@@ -1,0 +1,112 @@
+name: Build
+
+# develop builds X.Y.Z-dev.N, release X.Y.Z-pre.N and main the release X.Y.Z, which the release job
+# tags and publishes with the package (see CONTRIBUTING.md of amadeos-eu/amadeos, "Commits and versions").
+on:
+  push:
+    branches: [develop, release, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      channel: ${{ steps.version.outputs.channel }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The version is computed from the history since the last release tag.
+          fetch-depth: 0
+      - id: version
+        uses: amadeos-eu/amadeos-ci/version@main
+        with:
+          metainfo: packaging/eu.amadeos.apps.terminal.metainfo.xml
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          # Plain actions/cache instead of the proprietary enhanced cache that is the v6 default.
+          cache-provider: basic
+      # The tests read ffmpeg's test picture and record real MP4 and WebM files with it.
+      # The pseudo terminal tests start real shells; the window tests skip themselves without a display,
+      # so run under Xvfb.
+      - name: Test
+        run: xvfb-run --auto-servernum ./gradlew test --no-daemon
+      - name: Check that the tests ran
+        run: |
+          count=$(grep -ho 'tests="[0-9]*"' build/test-results/test/*.xml | grep -o '[0-9]*' | paste -sd+ | bc)
+          skipped=$(grep -ho 'skipped="[0-9]*"' build/test-results/test/*.xml | grep -o '[0-9]*' | paste -sd+ | bc)
+          echo "Tests run: $count, skipped: $skipped"
+          test "$count" -ge 100
+          test "$skipped" -eq 0
+      - name: Package
+        run: ./gradlew jar deb --no-daemon -PappVersion=${{ steps.version.outputs.version }}
+      - name: Check the fat jar and the package
+        run: |
+          jar=$(ls build/libs/amade-terminal-*.jar)
+          unzip -l "$jar" icons/amade-terminal.png
+          unzip -p "$jar" META-INF/MANIFEST.MF | grep -q 'Main-Class: eu.amadeos.apps.terminal'
+          unzip -p "$jar" META-INF/MANIFEST.MF | grep -q "Enable-Native-Access: ALL-UNNAMED"
+          deb=$(ls build/distributions/amade-terminal_*_all.deb)
+          dpkg-deb --info "$deb"
+          dpkg-deb --field "$deb" Provides | grep -q x-terminal-emulator
+          dpkg-deb --ctrl-tarfile "$deb" | tar -tf - | grep -q postinst
+          dpkg-deb --ctrl-tarfile "$deb" | tar -xOf - ./postinst | grep -q 'update-alternatives --install /usr/bin/x-terminal-emulator'
+          dpkg-deb --contents "$deb" > contents.txt
+          for f in opt/amade-terminal/amade-terminal.jar usr/bin/amade-terminal \
+                   usr/share/applications/amade-terminal.desktop \
+                   usr/share/icons/hicolor/48x48/apps/amade-terminal.png \
+                   usr/share/metainfo/eu.amadeos.apps.terminal.metainfo.xml usr/share/doc/amade-terminal/copyright; do
+            grep -q "$f" contents.txt || { echo "missing in the package: $f"; exit 1; }
+          done
+      - name: Upload the Debian package
+        uses: actions/upload-artifact@v7
+        with:
+          name: amade-terminal-deb
+          path: build/distributions/*.deb
+          if-no-files-found: error
+      - name: Check the package version
+        run: |
+          deb=$(ls build/distributions/amade-terminal_*_all.deb)
+          test "$(dpkg-deb --field "$deb" Version)" = "${{ steps.version.outputs.deb-version }}"
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: build/reports/tests/test
+
+  # Only on main, after the release branch was promoted: tag vX.Y.Z and publish the GitHub Release.
+  release:
+    needs: test
+    if: needs.test.outputs.channel == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v8
+        with:
+          name: amade-terminal-deb
+          path: dist
+      - uses: amadeos-eu/amadeos-ci/release@main
+        with:
+          version: ${{ needs.test.outputs.version }}
+          files: dist/*.deb
+
+  commits:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: amadeos-eu/amadeos-ci/check-commits@main
