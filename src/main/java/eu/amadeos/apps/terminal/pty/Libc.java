@@ -36,6 +36,7 @@ final class Libc {
     private static final VarHandle ERRNO = CAPTURE.varHandle(MemoryLayout.PathElement.groupElement("errno"));
     private static final Linker.Option ERRNO_OPTION = Linker.Option.captureCallState("errno");
 
+    // --8<-- [start:handles]
     private static final MethodHandle POSIX_OPENPT = handle("posix_openpt", FunctionDescriptor.of(JAVA_INT, JAVA_INT));
     private static final MethodHandle GRANTPT = handle("grantpt", FunctionDescriptor.of(JAVA_INT, JAVA_INT));
     private static final MethodHandle UNLOCKPT = handle("unlockpt", FunctionDescriptor.of(JAVA_INT, JAVA_INT));
@@ -51,6 +52,7 @@ final class Libc {
     private static final MethodHandle POLL = handle("poll",
             FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_LONG, JAVA_INT));
     private static final MethodHandle KILL = handle("kill", FunctionDescriptor.of(JAVA_INT, JAVA_INT, JAVA_INT));
+    // --8<-- [end:handles]
 
     private Libc() {
     }
@@ -101,6 +103,7 @@ final class Libc {
         }
     }
 
+    // --8<-- [start:errno]
     /** read(2); returns the count, or minus errno. */
     static long read(int fd, MemorySegment buf, long count, MemorySegment errno) {
         try {
@@ -110,6 +113,7 @@ final class Libc {
             throw new IllegalStateException(t);
         }
     }
+    // --8<-- [end:errno]
 
     /** write(2); returns the count, or minus errno. */
     static long write(int fd, MemorySegment buf, long count, MemorySegment errno) {

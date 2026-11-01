@@ -475,6 +475,7 @@ public final class MainWindow extends JFrame implements TerminalTab.Owner {
         if (size != s.fontSize()) app.setSettings(s.withFontSize(size));
     }
 
+    // --8<-- [start:paste]
     /**
      * Pastes text into a tab: with a warning first if it has several lines and the program would run them at
      * once (no bracketed paste).
@@ -503,6 +504,7 @@ public final class MainWindow extends JFrame implements TerminalTab.Owner {
         tab.send(KeyEncoder.paste(toSend, bracketed).getBytes(StandardCharsets.UTF_8));
         tab.view().requestFocusInWindow();
     }
+    // --8<-- [end:paste]
 
     @Override
     public void showMenu(TerminalTab tab, MouseEvent e) {

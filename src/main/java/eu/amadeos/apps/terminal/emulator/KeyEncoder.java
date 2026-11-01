@@ -23,6 +23,7 @@ public final class KeyEncoder {
     }
 
     /** The bytes (as text) for a special key, or null if it sends nothing. */
+    // --8<-- [start:keys]
     public static String key(Key key, int mods, boolean appCursor, boolean appKeypad) {
         int m = 1 + mods;
         return switch (key) {
@@ -49,6 +50,7 @@ public final class KeyEncoder {
             case F11 -> tilde(23, mods);
             case F12 -> tilde(24, mods);
             case BACKSPACE -> ((mods & ALT) != 0 ? ESC : "") + ((mods & CTRL) != 0 ? "\b" : "\u007f");
+    // --8<-- [end:keys]
             case TAB -> (mods & SHIFT) != 0 ? ESC + "[Z" : ((mods & ALT) != 0 ? ESC : "") + "\t";
             case ENTER -> ((mods & ALT) != 0 ? ESC : "") + "\r";
             case KEYPAD_ENTER -> appKeypad ? ESC + "OM" : ((mods & ALT) != 0 ? ESC : "") + "\r";
@@ -114,10 +116,12 @@ public final class KeyEncoder {
      * {@code CSI 200~} and {@code CSI 201~}, and an end marker inside the text is removed so that pasted text
      * can never end the paste early.
      */
+    // --8<-- [start:paste]
     public static String paste(String text, boolean bracketed) {
         String t = text.replace("\r\n", "\r").replace('\n', '\r');
         if (!bracketed) return t;
         t = t.replace(ESC + "[201~", "").replace(ESC + "[200~", "");
         return ESC + "[200~" + t + ESC + "[201~";
     }
+    // --8<-- [end:paste]
 }

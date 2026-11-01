@@ -26,8 +26,10 @@ public final class PtySession {
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(PtySession.class);
+    // --8<-- [start:script]
     /** Opens the terminal device as stdin, stdout and stderr, then gives the program a session of its own. */
     static final String START = "exec setsid --ctty --wait \"$@\" <>\"$AMADE_TERMINAL_TTY\" >&0 2>&0";
+    // --8<-- [end:script]
     private static final String TTY_VARIABLE = "AMADE_TERMINAL_TTY";
 
     private final UnixPty pty;
@@ -41,6 +43,7 @@ public final class PtySession {
         reader = Thread.ofPlatform().daemon().name("pty-reader-" + process.pid()).start(() -> read(output, exited));
     }
 
+    // --8<-- [start:start]
     /**
      * Starts {@code command} in {@code directory} on a new terminal of {@code cols} x {@code rows}.
      * {@code environment} replaces the inherited variables of the same name; a null value removes one.
@@ -70,7 +73,9 @@ public final class PtySession {
         }
         return new PtySession(pty, process, output, exited);
     }
+    // --8<-- [end:start]
 
+    // --8<-- [start:reader]
     private void read(Output output, IntConsumer exited) {
         byte[] buffer = new byte[65536];
         try {
@@ -98,6 +103,7 @@ public final class PtySession {
         if (goneSince == 0) goneSince = now;
         return now - goneSince > 1_000_000_000L;
     }
+    // --8<-- [end:reader]
 
     public long pid() {
         return process.pid();
@@ -143,6 +149,7 @@ public final class PtySession {
         }
     }
 
+    // --8<-- [start:hangup]
     /**
      * Ends the session as closing a terminal does: SIGHUP to the foreground program and to the shell, and a
      * SIGKILL for whatever is still there a few seconds later.
@@ -167,6 +174,7 @@ public final class PtySession {
             }
         });
     }
+    // --8<-- [end:hangup]
 
     /** Waits until the reader has seen the end (for tests). */
     public boolean awaitEnd(long millis) throws InterruptedException {

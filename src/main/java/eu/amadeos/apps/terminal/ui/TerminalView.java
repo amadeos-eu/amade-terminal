@@ -238,6 +238,7 @@ public final class TerminalView extends JComponent {
 
     // ================================================================ output and scrolling
 
+    // --8<-- [start:poll]
     private void poll() {
         long changes;
         synchronized (emu) {
@@ -255,6 +256,7 @@ public final class TerminalView extends JComponent {
         repaint();
         host.viewChanged();
     }
+    // --8<-- [end:poll]
 
     /** Lines scrolled back from the live screen (0 = following the output). */
     public int scrollOffset() {

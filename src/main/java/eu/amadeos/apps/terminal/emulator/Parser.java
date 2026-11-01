@@ -31,6 +31,7 @@ public final class Parser {
         clear();
     }
 
+    // --8<-- [start:accept]
     public void accept(int c) {
         // "anywhere" transitions
         if (c == 0x18 || c == 0x1A) {
@@ -61,6 +62,7 @@ public final class Parser {
                 else if (c == 'X' || c == '^' || c == '_') state = State.SOS_PM_APC_STRING;
                 else if (c <= 0x7E) { handler.escDispatch("", c); state = State.GROUND; }
             }
+    // --8<-- [end:accept]
             case ESCAPE_INTERMEDIATE -> {
                 if (c < 0x20) handler.execute(c);
                 else if (c <= 0x2F) intermediates.appendCodePoint(c);

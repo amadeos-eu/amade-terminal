@@ -314,6 +314,7 @@ public final class TerminalEmulator implements ParserHandler {
         int cursorLine = h + cy;
         int cursorCol = Math.min(cx, cols - 1);
 
+        // --8<-- [start:reflow]
         java.util.List<Line> out = new java.util.ArrayList<>();
         int newCursorLine = -1;
         int newCursorCol = 0;
@@ -357,6 +358,7 @@ public final class TerminalEmulator implements ParserHandler {
             out.add(current);
             if (out.size() == firstOut) out.add(new Line(newCols));
         }
+        // --8<-- [end:reflow]
         if (moveCursor && newCursorLine < 0) {
             newCursorLine = out.size();
             newCursorCol = 0;
@@ -388,6 +390,7 @@ public final class TerminalEmulator implements ParserHandler {
 
     // ================================================================ parser callbacks
 
+    // --8<-- [start:print]
     @Override
     public void print(int cp) {
         if (cp < 0x80 && cp >= 0x20) {
@@ -431,6 +434,7 @@ public final class TerminalEmulator implements ParserHandler {
             if (!autoWrap) cx = cols - 1;
         }
     }
+    // --8<-- [end:print]
 
     @Override
     public void execute(int c) {

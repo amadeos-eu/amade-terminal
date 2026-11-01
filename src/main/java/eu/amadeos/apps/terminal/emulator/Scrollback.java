@@ -26,6 +26,7 @@ public final class Scrollback {
         return ring[(start + i) % ring.length];
     }
 
+    // --8<-- [start:add]
     /** Adds a line at the end; returns true if the oldest line had to go for it. */
     public boolean add(Line line) {
         if (capacity == 0) return true;
@@ -39,6 +40,7 @@ public final class Scrollback {
         start = (start + 1) % ring.length;
         return true;
     }
+    // --8<-- [end:add]
 
     /** Takes the newest line away (when a taller window pulls lines back onto the screen). */
     public Line removeLast() {

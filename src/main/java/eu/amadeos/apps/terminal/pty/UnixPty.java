@@ -28,6 +28,7 @@ public final class UnixPty {
         pollfd = arena.allocate(8);
     }
 
+    // --8<-- [start:open]
     /** Opens a new pseudo terminal with a window size. */
     public static UnixPty open(int cols, int rows) throws IOException {
         int fd = Libc.posixOpenpt(Libc.O_RDWR | Libc.O_NOCTTY | Libc.O_CLOEXEC);
@@ -45,12 +46,14 @@ public final class UnixPty {
         pty.resize(cols, rows, 0, 0);
         return pty;
     }
+    // --8<-- [end:open]
 
     /** The slave device, e.g. {@code /dev/pts/3}. */
     public String slaveName() {
         return slave;
     }
 
+    // --8<-- [start:read]
     /**
      * Reads what the program wrote; blocks until there is something. Returns -1 when the program side is
      * closed (all programs on the terminal have ended), or when nothing came for a moment and {@code giveUp}
@@ -73,6 +76,7 @@ public final class UnixPty {
             if (n != -Libc.EINTR && n != -Libc.EAGAIN) throw new IOException("read failed: errno " + -n);
         }
     }
+    // --8<-- [end:read]
 
     /** Sends bytes to the program (keys, pasted text, answers). */
     public void write(byte[] bytes, int offset, int length) throws IOException {
@@ -90,6 +94,7 @@ public final class UnixPty {
         }
     }
 
+    // --8<-- [start:resize]
     /** The new window size; the kernel sends SIGWINCH to the program, which redraws. */
     public void resize(int cols, int rows, int widthPixels, int heightPixels) {
         if (closed.get()) return;
@@ -102,6 +107,7 @@ public final class UnixPty {
             Libc.ioctl(fd, Libc.TIOCSWINSZ, ws);
         }
     }
+    // --8<-- [end:resize]
 
     /** The process group in the foreground of the terminal (the program the user is running), or -1. */
     public int foregroundProcessGroup() {
