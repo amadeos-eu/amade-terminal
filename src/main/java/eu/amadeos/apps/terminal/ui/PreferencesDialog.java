@@ -3,6 +3,7 @@ package eu.amadeos.apps.terminal.ui;
 import eu.amadeos.apps.terminal.domain.ColorScheme;
 import eu.amadeos.apps.terminal.domain.CursorShape;
 import eu.amadeos.apps.terminal.domain.Palette;
+import eu.amadeos.apps.terminal.domain.PreviewPrompt;
 import eu.amadeos.apps.terminal.domain.TerminalSettings;
 import eu.amadeos.apps.terminal.emulator.TerminalEmulator;
 import eu.amadeos.commons.i18n.Messages;
@@ -131,13 +132,14 @@ public final class PreferencesDialog extends JDialog {
         preview = new TerminalView(previewEmulator, previewSettings(s), palette, new NoHost());
         preview.setName("prefs.preview");
         preview.setFocusable(false);
-        previewEmulator.feed("\u001b[1;32mralf@amadeos\u001b[0m:\u001b[1;34m~\u001b[0m$ ls --color\r\n"
+        String prompt = "\u001b[1;32m" + PreviewPrompt.current() + "\u001b[0m:\u001b[1;34m~\u001b[0m$ ";
+        previewEmulator.feed(prompt + "ls --color\r\n"
                 + "\u001b[1;34mDocuments\u001b[0m  \u001b[1;32mbackup.sh\u001b[0m  \u001b[1;31mphotos.tar.gz\u001b[0m"
                 + "  \u001b[36mlink\u001b[0m\r\n"
                 + "\u001b[40m  \u001b[41m  \u001b[42m  \u001b[43m  \u001b[44m  \u001b[45m  \u001b[46m  \u001b[47m  "
                 + "\u001b[100m  \u001b[101m  \u001b[102m  \u001b[103m  \u001b[104m  \u001b[105m  \u001b[106m  "
                 + "\u001b[107m  \u001b[0m\r\n"
-                + "\u001b[1;32mralf@amadeos\u001b[0m:\u001b[1;34m~\u001b[0m$ ");
+                + prompt);
 
         JTabbedPane pages = new JTabbedPane();
         pages.setName("prefs.pages");
